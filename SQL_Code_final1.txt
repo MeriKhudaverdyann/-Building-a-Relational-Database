@@ -1,0 +1,256 @@
+-- Drop tables if they exist
+DROP TABLE IF EXISTS Client_Insurance;
+DROP TABLE IF EXISTS Insurance_Claims;
+DROP TABLE IF EXISTS Promotions;
+DROP TABLE IF EXISTS Feedbacks;
+DROP TABLE IF EXISTS Payments;
+DROP TABLE IF EXISTS Sales;
+DROP TABLE IF EXISTS Reservations;
+DROP TABLE IF EXISTS Availability;
+DROP TABLE IF EXISTS Specialists;
+DROP TABLE IF EXISTS Services;
+DROP TABLE IF EXISTS Branches;
+DROP TABLE IF EXISTS Clients;
+DROP TABLE IF EXISTS Cities;
+DROP TABLE IF EXISTS Categories;
+DROP TABLE IF EXISTS Insurance_Policies;
+DROP TABLE IF EXISTS Insurance_Providers;
+
+-- Create Cities table
+CREATE TABLE Cities (
+    city_id SERIAL PRIMARY KEY,
+    city_name VARCHAR(100),
+    province VARCHAR(100)
+);
+
+-- Create Branches table
+CREATE TABLE Branches (
+    branch_id SERIAL PRIMARY KEY,
+    branch_name VARCHAR(100),
+    address VARCHAR(255),
+    city_id INTEGER,
+    phone_number VARCHAR(20),
+    email VARCHAR(100),
+    branch_status VARCHAR(100)
+);
+
+-- Create Clients table
+CREATE TABLE Clients (
+    client_id SERIAL PRIMARY KEY,
+    first_name VARCHAR(50),
+    last_name VARCHAR(50),
+    date_of_birth DATE,
+    email VARCHAR(100),
+    phone_number VARCHAR(20),
+    address VARCHAR(255),
+    city_id INTEGER,
+    branch_id INTEGER,
+    gender VARCHAR(10),
+    start_date TIMESTAMP,
+    end_date TIMESTAMP
+);
+
+-- Create Categories table
+CREATE TABLE Categories (
+    category_id SERIAL PRIMARY KEY,
+    category_name VARCHAR(100),
+    start_date TIMESTAMP,
+    end_date TIMESTAMP
+);
+
+-- Create Services table
+CREATE TABLE Services (
+    service_id SERIAL PRIMARY KEY,
+    service_name VARCHAR(100),
+    price NUMERIC,
+    duration INTEGER,
+    category_id INTEGER,
+    is_active BOOLEAN,
+    start_date TIMESTAMP,
+    end_date TIMESTAMP
+);
+
+-- Create Specialists table
+CREATE TABLE Specialists (
+    specialist_id SERIAL PRIMARY KEY,
+    first_name VARCHAR(50),
+    last_name VARCHAR(50),
+    specialty VARCHAR(100),
+    experience_years INTEGER,
+    email VARCHAR(100),
+    phone_number VARCHAR(20),
+    branch_id INTEGER,
+    start_date TIMESTAMP,
+    end_date TIMESTAMP,
+    is_available BOOLEAN
+);
+
+-- Create Availability table
+CREATE TABLE Availability (
+    specialist_id INTEGER PRIMARY KEY, 
+    branch_id INTEGER PRIMARY KEY,,
+    availability_date DATE PRIMARY KEY,,
+    start_time TIME,
+    end_time TIME
+);
+
+-- Create Reservations table
+CREATE TABLE Reservations (
+    reservation_id SERIAL PRIMARY KEY,
+    client_id INTEGER,
+    specialist_id INTEGER,
+    service_id INTEGER,
+    branch_id INTEGER,
+    reservation_date DATE,
+    reservation_time TIME,
+    reservation_status VARCHAR(50)
+
+-- Create Sales table
+CREATE TABLE Sales (
+    sale_id SERIAL PRIMARY KEY,
+    reservation_id INTEGER,
+    sale_date DATE,
+    total_amount NUMERIC,
+    payment_id INTEGER,
+    discount_applied NUMERIC,
+    final_amount NUMERIC
+);
+
+-- Create Payments table
+CREATE TABLE Payments (
+    payment_id SERIAL PRIMARY KEY,
+    payment_type VARCHAR(50),
+    payment_date DATE,
+    payment_status VARCHAR(50)
+);
+
+-- Create Feedbacks table
+CREATE TABLE Feedbacks (
+    feedback_id SERIAL PRIMARY KEY,
+    client_id INTEGER,
+    service_id INTEGER,
+    specialist_id INTEGER,
+    rating INTEGER CHECK (rating BETWEEN 1 AND 5),
+    feedback_comments TEXT,
+    feedback_date DATE
+);
+
+-- Create Promotions table
+CREATE TABLE Promotions (
+    promotion_id SERIAL PRIMARY KEY,
+    promotion_name VARCHAR(100),
+    discount_percentage NUMERIC,
+    start_date TIMESTAMP,
+    end_date TIMESTAMP,
+    is_active BOOLEAN
+);
+
+-- Create Insurance_Providers table
+CREATE TABLE Insurance_Providers (
+    provider_id SERIAL PRIMARY KEY,
+    provider_name VARCHAR(100),
+    contact_number VARCHAR(20),
+    email VARCHAR(100),
+    address VARCHAR(255),
+    city_id INTEGER,
+    start_date TIMESTAMP,
+    end_date TIMESTAMP
+);
+
+-- Create Insurance_Policies table
+CREATE TABLE Insurance_Policies (
+    policy_id SERIAL PRIMARY KEY,
+    provider_id INTEGER,
+    policy_name VARCHAR(100),
+    coverage_amount NUMERIC,
+    policy_type VARCHAR(50),
+    start_date TIMESTAMP,
+    end_date TIMESTAMP
+);
+
+-- Create Client_Insurance table
+CREATE TABLE Client_Insurance (
+    client_insurance_id SERIAL PRIMARY KEY,
+    client_id INTEGER,
+    policy_id INTEGER,
+    policy_number VARCHAR(100),
+    coverage_percentage NUMERIC,
+    start_date TIMESTAMP,
+    end_date TIMESTAMP,
+    is_active BOOLEAN
+);
+
+-- Create Insurance_Claims table
+CREATE TABLE Insurance_Claims (
+    claim_id SERIAL PRIMARY KEY,
+    policy_id INTEGER,
+    client_id INTEGER,
+    reservation_id INTEGER,
+    claim_amount NUMERIC,
+    claim_status VARCHAR(50),
+    submission_date DATE,
+    approval_date DATE,
+    remarks TEXT,
+    start_date TIMESTAMP,
+    end_date TIMESTAMP
+);
+
+
+-- Add foreign key constraints to Branches
+ALTER TABLE Branches
+ADD CONSTRAINT fk_branches_city_id FOREIGN KEY (city_id) REFERENCES Cities(city_id);
+
+-- Add foreign key constraints to Clients
+ALTER TABLE Clients
+ADD CONSTRAINT fk_clients_city_id FOREIGN KEY (city_id) REFERENCES Cities(city_id),
+ADD CONSTRAINT fk_clients_branch_id FOREIGN KEY (branch_id) REFERENCES Branches(branch_id);
+
+-- Add foreign key constraints to Services
+ALTER TABLE Services
+ADD CONSTRAINT fk_services_category_id FOREIGN KEY (category_id) REFERENCES Categories(category_id);
+
+-- Add foreign key constraints to Specialists
+ALTER TABLE Specialists
+ADD CONSTRAINT fk_specialists_branch_id FOREIGN KEY (branch_id) REFERENCES Branches(branch_id);
+
+-- Add foreign key constraints to Availability
+ALTER TABLE Availability
+ADD CONSTRAINT fk_availability_specialist_id FOREIGN KEY (specialist_id) REFERENCES Specialists(specialist_id),
+ADD CONSTRAINT fk_availability_branch_id FOREIGN KEY (branch_id) REFERENCES Branches(branch_id);
+
+-- Add foreign key constraints to Reservations
+ALTER TABLE Reservations
+ADD CONSTRAINT fk_reservations_client_id FOREIGN KEY (client_id) REFERENCES Clients(client_id),
+ADD CONSTRAINT fk_reservations_specialist_id FOREIGN KEY (specialist_id) REFERENCES Specialists(specialist_id),
+ADD CONSTRAINT fk_reservations_service_id FOREIGN KEY (service_id) REFERENCES Services(service_id),
+ADD CONSTRAINT fk_reservations_branch_id FOREIGN KEY (branch_id) REFERENCES Branches(branch_id);
+
+-- Add foreign key constraints to Sales
+ALTER TABLE Sales
+ADD CONSTRAINT fk_sales_reservation_id FOREIGN KEY (reservation_id) REFERENCES Reservations(reservation_id),
+ADD CONSTRAINT fk_sales_payment_id FOREIGN KEY (payment_id) REFERENCES Payments(payment_id);
+
+-- Add foreign key constraints to Feedbacks
+ALTER TABLE Feedbacks
+ADD CONSTRAINT fk_feedbacks_client_id FOREIGN KEY (client_id) REFERENCES Clients(client_id),
+ADD CONSTRAINT fk_feedbacks_service_id FOREIGN KEY (service_id) REFERENCES Services(service_id),
+ADD CONSTRAINT fk_feedbacks_specialist_id FOREIGN KEY (specialist_id) REFERENCES Specialists(specialist_id);
+
+-- Add foreign key constraints to Insurance_Providers
+ALTER TABLE Insurance_Providers
+ADD CONSTRAINT fk_insurance_providers_city_id FOREIGN KEY (city_id) REFERENCES Cities(city_id);
+
+-- Add foreign key constraints to Insurance_Policies
+ALTER TABLE Insurance_Policies
+ADD CONSTRAINT fk_insurance_policies_provider_id FOREIGN KEY (provider_id) REFERENCES Insurance_Providers(provider_id);
+
+-- Add foreign key constraints to Client_Insurance
+ALTER TABLE Client_Insurance
+ADD CONSTRAINT fk_client_insurance_client_id FOREIGN KEY (client_id) REFERENCES Clients(client_id),
+ADD CONSTRAINT fk_client_insurance_policy_id FOREIGN KEY (policy_id) REFERENCES Insurance_Policies(policy_id);
+
+-- Add foreign key constraints to Insurance_Claims
+ALTER TABLE Insurance_Claims
+ADD CONSTRAINT fk_insurance_claims_policy_id FOREIGN KEY (policy_id) REFERENCES Insurance_Policies(policy_id),
+ADD CONSTRAINT fk_insurance_claims_client_id FOREIGN KEY (client_id) REFERENCES Clients(client_id),
+ADD CONSTRAINT fk_insurance_claims_reservation_id FOREIGN KEY (reservation_id) REFERENCES Reservations(reservation_id);
